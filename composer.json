@@ -1,0 +1,19 @@
+{
+  "name": "cbwar/mysql-backup-script",
+  "require": {
+    "symfony/console": "^3.3",
+    "swiftmailer/swiftmailer": "^6.0",
+    "symfony/validator": "^3.3"
+  },
+  "authors": [
+    {
+      "name": "Raphael Lisch",
+      "email": "raphael.lisch@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cbwar\\MysqlBackup\\": "src"
+    }
+  }
+}
