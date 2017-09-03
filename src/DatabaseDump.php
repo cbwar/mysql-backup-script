@@ -106,7 +106,7 @@ class DatabaseDump
      * @throws DumpException
      * @throws \Exception
      */
-    public function run($database, ?string $filename = null)
+    public function run($database, string $filename = null)
     {
         if (is_array($database)) {
             foreach ($database as $db) {
