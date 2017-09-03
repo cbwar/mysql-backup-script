@@ -34,7 +34,7 @@ class Run extends Command
         foreach ($config['databases'] as $key => $database) {
             $destination = rtrim($config['destination']['path'], '/') . '/' . $key;
 
-            $dumper = new DatabaseDump($database, $destination, $output);
+            $dumper = new DatabaseDump($database, $destination, $output, $config['compress']);
             $output->writeln('');
             $output->writeln("<options=bold,underscore>Dumping " . $database['username'] . '@'
                 . $database['hostname'] . ':' . $database['port'] . '</>');
@@ -42,6 +42,7 @@ class Run extends Command
             try {
                 $dumper->run($database['databases']);
             } catch (DumpException $err) {
+
             }
         }
 

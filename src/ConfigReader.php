@@ -38,6 +38,8 @@ class ConfigReader
         $validator = Validation::createValidator();
 
         $constraint = new Assert\Collection([
+            'compress' => new Assert\Choice([true, false]),
+            'history' => new Assert\Range(['min' => 1]),
             'databases' => new Assert\All([
                 'constraints' => new Assert\Collection([
                     "hostname" => new Assert\Length(['min' => 1]),

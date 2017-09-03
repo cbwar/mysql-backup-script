@@ -21,29 +21,39 @@ class DatabaseDump
      * @var OutputInterface
      */
     private $output;
+    /**
+     * @var bool
+     */
+    private $compress;
 
     /**
      * DumpServer constructor.
      * @param array $configuration
      * @param string $destinationPath
      */
-    public function __construct(array $configuration, string $destinationPath, OutputInterface $output)
+    public function __construct(array $configuration, string $destinationPath, OutputInterface $output, bool $compress = true)
     {
         $this->configuration = $configuration;
         $this->destinationPath = $destinationPath;
         $this->output = $output;
-
-        if (!@mkdir($destinationPath, 0777, true) && !is_dir($destinationPath)) {
-            throw new \Exception("Cannot create destination path $destinationPath");
-        }
-
+        $this->compress = $compress;
     }
 
+    /**
+     * @return \PDO
+     */
+    private function getPdo()
+    {
+        $pdo = new \PDO('mysql:host=' . $this->configuration['hostname'] . ':'
+            . $this->configuration['port'], $this->configuration['username'], $this->configuration['password']);
+        return $pdo;
+    }
 
     /**
      * Dump database
      * @param string $database
      * @param string $filename
+     * @return int
      */
     private function mysqldump(string $database, string $filename)
     {
@@ -60,6 +70,7 @@ class DatabaseDump
             $filename
         );
         exec($command, $output, $return_var);
+
         if ($return_var !== 0 && file_exists($filename)) {
             unlink($filename);
         }
@@ -71,15 +82,29 @@ class DatabaseDump
      */
     private function findDatabases()
     {
-
-
-        return [];
+        $pdo = $this->getPdo();
+        $result = $pdo->query('SHOW DATABASES')->fetchAll();
+        return array_filter(array_map(function ($item) {
+            return $item['Database'];
+        }, $result), function ($item) {
+            if (in_array($item, [
+                'information_schema',
+                'performance_schema',
+                'mysql',
+                'sys',
+            ])) {
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
      * Dump a database to a file
      * @param string|[] $database
      * @param string|null $filename
+     * @throws DumpException
+     * @throws \Exception
      */
     public function run($database, ?string $filename = null)
     {
@@ -103,13 +128,50 @@ class DatabaseDump
         if ($filename === null) {
             $filename = sprintf("%s-%s.sql", $database, date('YmdHis'));
         }
-        $path = sprintf("%s/%s", $this->destinationPath, $filename);
+        $path = sprintf("%s/%s/%s", $this->destinationPath, $database, $filename);
+
+        if (!@mkdir(dirname($path), 0777, true) && !is_dir(dirname($path))) {
+            throw new \Exception("Cannot create destination path " . dirname($path));
+        }
+
         $this->output->writeln("Dumping database '$database' to '$path'");
         $return = $this->mysqldump($database, $path);
 
         if ($return !== 0) {
             throw new DumpException(sprintf("Error dumping database '%s', return code = %d", $database, $return));
         }
+
+        if ($this->compress === true) {
+            $return = $this->gzip($path);
+
+            if ($return !== 0) {
+                throw new DumpException(sprintf("Error compressing database '%s', return code = %d", $database, $return));
+            }
+        }
+
+    }
+
+    /**
+     * @param string $filename
+     * @return int
+     */
+    private function gzip(string $filename)
+    {
+        $return_var = NULL;
+        $output = NULL;
+        $errorFile = $filename . '.log';
+        $command = sprintf("cat %s | gzip -c 2>%s >%s && rm -f %s",
+            $filename,
+            $errorFile,
+            $filename . '.gz',
+            $filename
+        );
+        exec($command, $output, $return_var);
+
+        if ($return_var !== 0 && file_exists($filename)) {
+            unlink($filename);
+        }
+        return $return_var;
     }
 
 }
