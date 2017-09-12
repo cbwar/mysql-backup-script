@@ -39,14 +39,15 @@ class ConfigReader
 
         $constraint = new Assert\Collection([
             'compress' => new Assert\Choice([true, false]),
-            'history' => new Assert\Range(['min' => 1]),
+            'keep' => new Assert\Range(['min' => 1]),
             'databases' => new Assert\All([
                 'constraints' => new Assert\Collection([
                     "hostname" => new Assert\Length(['min' => 1]),
                     "port" => new Assert\Required(),
                     "username" => new Assert\Required(),
                     "password" => new Assert\Required(),
-                    "databases" => new Assert\Collection([])
+                    "databases" => new Assert\Collection([]),
+                    "keep"=>new Assert\Optional()
                 ]),
             ]),
             'destination' => new Assert\Collection([

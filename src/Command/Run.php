@@ -40,6 +40,7 @@ class Run extends Command
                 . $database['hostname'] . ':' . $database['port'] . '</>');
 
             try {
+                $dumper->setKeepHistory($config['keep']);
                 $dumper->run($database['databases']);
             } catch (DumpException $err) {
 

@@ -27,6 +27,11 @@ class DatabaseDump
     private $compress;
 
     /**
+     * @var int
+     */
+    private $keepHistory = 10;
+
+    /**
      * DumpServer constructor.
      * @param array $configuration
      * @param string $destinationPath
@@ -134,6 +139,10 @@ class DatabaseDump
             throw new \Exception("Cannot create destination path " . dirname($path));
         }
 
+        if (is_file($path) || is_file($path . '.gz')) {
+            $this->output->writeln("File $path already exists. Not dumping $database");
+            return;
+        }
         $this->output->writeln("Dumping database '$database' to '$path'");
         $return = $this->mysqldump($database, $path);
 
@@ -148,6 +157,8 @@ class DatabaseDump
                 throw new DumpException(sprintf("Error compressing database '%s', return code = %d", $database, $return));
             }
         }
+
+        $this->cleanup($database);
 
     }
 
@@ -172,6 +183,39 @@ class DatabaseDump
             unlink($filename);
         }
         return $return_var;
+    }
+
+    /**
+     * @param $history
+     */
+    private function cleanup($database)
+    {
+        if (isset($this->configuration['keep'])) {
+            $history = $this->configuration['keep'];
+        } else {
+            $history = $this->keepHistory;
+        }
+
+        $this->output->writeln("Keeping $history files");
+
+        $files = glob($this->destinationPath . '/' . $database . '/*.gz');
+        usort($files, function ($a, $b) {
+            if (filemtime($a) > filemtime($b)) return -1;
+            return 1;
+        });
+        $files = array_slice($files, $history);
+        foreach ($files as $file) {
+            $this->output->writeln("Removing $file");
+            unlink($file);
+        }
+    }
+
+    /**
+     * @param int $keepHistory
+     */
+    public function setKeepHistory(int $keepHistory)
+    {
+        $this->keepHistory = $keepHistory;
     }
 
 }
