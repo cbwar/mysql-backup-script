@@ -198,16 +198,28 @@ class DatabaseDump
 
         $this->output->writeln("Keeping $history files");
 
-        $files = glob($this->destinationPath . '/' . $database . '/*.gz');
-        usort($files, function ($a, $b) {
-            if (filemtime($a) > filemtime($b)) return -1;
+        $files = array_map(function ($item) {
+            return new \SplFileObject($item);
+        }, glob($this->destinationPath . '/' . $database . '/*.gz'));
+        usort($files, function (\SplFileObject $a, \SplFileObject $b) {
+            if ($a->getMTime() > $b->getMTime()) return -1;
             return 1;
         });
         $files = array_slice($files, $history);
+
+        /** @var \SplFileObject $file */
         foreach ($files as $file) {
-            $this->output->writeln("Removing $file");
-            unlink($file);
+
+            $logfile = $file->getPath() . '/' . pathinfo($file->getFilename(), PATHINFO_FILENAME) . '.log';
+
+            $this->output->writeln("Removing {$file->getRealPath()}");
+            unlink($file->getRealPath());
+
+            // TODO: Delete log file
+            $this->output->writeln("Removing $logfile");
+            unlink($logfile);
         }
+
     }
 
     /**
