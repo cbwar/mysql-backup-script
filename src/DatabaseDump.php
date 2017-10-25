@@ -121,7 +121,6 @@ class DatabaseDump
             try {
                 $databases = $this->findDatabases();
                 $this->output->writeln(count($databases) . " databases found.");
-                var_export($databases);
                 $this->run($databases);
             } catch (\PDOException $err) {
                 throw new DumpException($err->getMessage());
