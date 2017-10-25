@@ -65,7 +65,7 @@ class DatabaseDump
         $return_var = NULL;
         $output = NULL;
         $errorFile = $filename . '.log';
-        $command = sprintf("/usr/bin/mysqldump -u%s -h%s -P%d -p%s %s 2>%s >%s",
+        $command = sprintf("/usr/bin/mysqldump --skip-lock-tables -u%s -h%s -P%d -p%s %s 2>%s >%s",
             $this->configuration['username'],
             $this->configuration['hostname'],
             $this->configuration['port'],
