@@ -28,8 +28,8 @@ class ConfigDump extends Command
         $config = require __DIR__ . '/../../config/config.php';
 
         $output->writeln('');
-        $output->writeln('<options=bold>Databases</>');
-        foreach ($config['databases'] as $key => $database) {
+        $output->writeln('<options=bold>Servers</>');
+        foreach ($config['servers'] as $key => $database) {
             $output->writeln(' - ' . $key);
             foreach ($database as $key2 => $value) {
                 if (is_array($value)) {
