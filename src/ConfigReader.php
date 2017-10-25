@@ -40,7 +40,7 @@ class ConfigReader
         $constraint = new Assert\Collection([
             'compress' => new Assert\Choice([true, false]),
             'keep' => new Assert\Range(['min' => 1]),
-            'databases' => new Assert\All([
+            'servers' => new Assert\All([
                 'constraints' => new Assert\Collection([
                     "hostname" => new Assert\Length(['min' => 1]),
                     "port" => new Assert\Required(),

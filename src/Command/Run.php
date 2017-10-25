@@ -31,19 +31,19 @@ class Run extends Command
 
         $config = require __DIR__ . '/../../config/config.php';
 
-        foreach ($config['databases'] as $key => $database) {
+        foreach ($config['servers'] as $key => $database) {
             $destination = rtrim($config['destination']['path'], '/') . '/' . $key;
 
             $dumper = new DatabaseDump($database, $destination, $output, $config['compress']);
             $output->writeln('');
-            $output->writeln("<options=bold,underscore>Dumping " . $database['username'] . '@'
+            $output->writeln("<options=bold,underscore>Connecting to server " . $database['username'] . '@'
                 . $database['hostname'] . ':' . $database['port'] . '</>');
 
             try {
                 $dumper->setKeepHistory($config['keep']);
                 $dumper->run($database['databases']);
             } catch (DumpException $err) {
-
+                $output->writeln('<error>Backup failed</error> : ' . $err->getMessage());
             }
         }
 

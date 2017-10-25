@@ -88,20 +88,22 @@ class DatabaseDump
     private function findDatabases()
     {
         $pdo = $this->getPdo();
+
         $result = $pdo->query('SHOW DATABASES')->fetchAll();
-        return array_filter(array_map(function ($item) {
-            return $item['Database'];
-        }, $result), function ($item) {
-            if (in_array($item, [
-                'information_schema',
-                'performance_schema',
-                'mysql',
-                'sys',
-            ])) {
-                return false;
-            }
-            return true;
-        });
+        return array_values(array_filter(array_map(function ($item) {
+                return $item['Database'];
+            }, $result), function ($item) {
+                if (in_array($item, [
+                    'information_schema',
+                    'performance_schema',
+                    'mysql',
+                    'sys',
+                ])) {
+                    return false;
+                }
+                return true;
+            })
+        );
     }
 
     /**
@@ -113,20 +115,30 @@ class DatabaseDump
      */
     public function run($database, string $filename = null)
     {
+
+        if ($database === '*' || (is_array($database) && $database[0] === '*')) {
+            // All databases
+            try {
+                $databases = $this->findDatabases();
+                $this->output->writeln(count($databases) . " databases found.");
+                var_export($databases);
+                $this->run($databases);
+            } catch (\PDOException $err) {
+                throw new DumpException($err->getMessage());
+            }
+            return;
+        }
+
         if (is_array($database)) {
             foreach ($database as $db) {
                 try {
                     $this->run($db);
                     $this->output->writeln("<info>Dump ok</info>");
                 } catch (DumpException $err) {
-                    $this->output->writeln("<error>Dump error, see logfile</error>");
+                    $this->output->writeln("<error>Dump error</error> : " . $err->getMessage());
                 }
+                $this->output->writeln('');
             }
-            return;
-        }
-
-        if ($database === '*') {
-            $this->run($this->findDatabases());
             return;
         }
 
@@ -143,7 +155,7 @@ class DatabaseDump
             $this->output->writeln("File $path already exists. Not dumping $database");
             return;
         }
-        $this->output->writeln("Dumping database '$database' to '$path'");
+        $this->output->writeln(" * Dumping database '$database' to '$path'");
         $return = $this->mysqldump($database, $path);
 
         if ($return !== 0) {
