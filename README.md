@@ -1,3 +1,21 @@
+# Mysql Backup Script 
+
+## Install
+
+```bash
+git clone https://github.com/cbwar/mysql-backup-script.git
+cd mysql-backup-script
+make
+```
+
+
+##Configure
+
+```bash
+cp config/config-example.php config/config.php
+ ```
+ 
+```php
 <?php
 
 return [
@@ -24,4 +42,18 @@ return [
         "path" => '/mnt/backups/databases', // Dumps destination, create subdirectories per server & per database
     ]
 
-];
+];                                      
+```
+
+## Run
+```bash
+php console.php
+```
+```
+Available commands:
+  config-dump  Dump the configuration
+  config-test  Test the configuration
+  help         Displays help for a command
+  list         Lists commands
+  run          Execute backup
+```
