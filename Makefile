@@ -1,28 +1,17 @@
-.PHONY:install ide
+.PHONY:install update clean
 .DEFAULT_GOAL=install
 
 ENV?=dev
 PHP=php
 COMPOSER=./composer.phar
 CURL=/usr/bin/curl
-COMPOSER_OPTS=
 
-ifeq ($(ENV), dev)
-install: vendor
-endif
-ifeq ($(ENV), prod)
-COMPOSER_OPTS=--no-dev --optimize-autoloader --prefer-dist
-install: vendor
-endif
-
-$(COMPOSER):
+install:
 	$(CURL) -sS https://getcomposer.org/installer | php -- --filename=$(COMPOSER)
 	chmod +x $(COMPOSER)
-
-vendor: $(COMPOSER) composer.lock
 	$(COMPOSER) install $(COMPOSER_OPTS)
 
-composer.lock: composer.json
+update:
 	$(COMPOSER) update $(COMPOSER_OPTS)
 
 clean:
