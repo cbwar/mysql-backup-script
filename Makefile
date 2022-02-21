@@ -1,18 +1,7 @@
-.PHONY:install update clean
-.DEFAULT_GOAL=install
+.PHONY:install
+install: composer.phar
+	php composer.phar install
 
-ENV?=dev
-PHP=php
-COMPOSER=./composer.phar
-CURL=/usr/bin/curl
-
-install:
-	$(CURL) -sS https://getcomposer.org/installer | php -- --filename=$(COMPOSER)
-	chmod +x $(COMPOSER)
-	$(COMPOSER) install $(COMPOSER_OPTS)
-
-update:
-	$(COMPOSER) update $(COMPOSER_OPTS)
-
-clean:
-	rm -f composer.phar
+composer.phar:
+	curl -sS https://getcomposer.org/installer | php -- --filename=composer.phar
+	chmod +x composer.phar
