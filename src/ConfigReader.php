@@ -2,7 +2,7 @@
 
 namespace Cbwar\MysqlBackup;
 
-use Symfony\Component\Validator\ConstraintViolation;
+use Cbwar\MysqlBackup\Exception\InvalidConfigurationException;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -10,31 +10,23 @@ class ConfigReader
 {
 
     /**
-     * @var string
+     * @throws InvalidConfigurationException
      */
-    private $filename;
-
-    /**
-     * ConfigReader constructor.
-     * @param string $filename
-     */
-    public function __construct(string $filename)
+    public function read(string $filename): array
     {
-        $this->filename = $filename;
+        if (!file_exists($filename)) {
+            throw new InvalidConfigurationException('Configuration error: filename ' . $filename . ' not found.');
+        }
+        $config = require $filename;
+        $this->validate($config);
+        return $config;
     }
 
     /**
-     * @return ConstraintViolation[]
-     * @throws \Exception
+     * @throws InvalidConfigurationException
      */
-    public function validate()
+    protected function validate(array $config): void
     {
-        if (!file_exists($this->filename)) {
-            throw new \Exception("Configuration file not found");
-        }
-
-        $config = require $this->filename;
-
         $validator = Validation::createValidator();
 
         $constraint = new Assert\Collection([
@@ -47,14 +39,19 @@ class ConfigReader
                     "username" => new Assert\Required(),
                     "password" => new Assert\Required(),
                     "databases" => new Assert\Collection([]),
-                    "keep"=>new Assert\Optional()
+                    "keep" => new Assert\Optional()
                 ]),
             ]),
             'destination' => new Assert\Collection([
                 'path' => new Assert\Length(['min' => 1])
             ])
         ]);
-        return $validator->validate($config, $constraint);
+
+        $violations = $validator->validate($config, $constraint);
+        if (count($violations) > 0) {
+            $violation = $violations[0];
+            throw new InvalidConfigurationException('Configuration error: ' . $violation->getPropertyPath() . ' : ' . $violation->getMessage());
+        }
     }
 
 }

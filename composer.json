@@ -6,6 +6,9 @@
     "swiftmailer/swiftmailer": "^6.0",
     "symfony/validator": "^3.3"
   },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
   "authors": [
     {
       "name": "Raphael Lisch",
