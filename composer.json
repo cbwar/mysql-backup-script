@@ -15,5 +15,8 @@
     "psr-4": {
       "Cbwar\\MysqlBackup\\": "src"
     }
+  },
+  "require-dev": {
+    "rector/rector": "^0.18.12"
   }
 }

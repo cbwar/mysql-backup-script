@@ -9,39 +9,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DatabaseDump
 {
 
-    /**
-     * @var array
-     */
-    private $configuration;
-    /**
-     * @var string
-     */
-    private $destinationPath;
-    /**
-     * @var OutputInterface
-     */
-    private $output;
-    /**
-     * @var bool
-     */
-    private $compress;
-
-    /**
-     * @var int
-     */
-    private $keepHistory = 10;
+    private int $keepHistory = 10;
 
     /**
      * DumpServer constructor.
-     * @param array $configuration
-     * @param string $destinationPath
      */
-    public function __construct(array $configuration, string $destinationPath, OutputInterface $output, bool $compress = true)
-    {
-        $this->configuration = $configuration;
-        $this->destinationPath = $destinationPath;
-        $this->output = $output;
-        $this->compress = $compress;
+    public function __construct(
+        private array $configuration,
+        private readonly string $destinationPath,
+        private readonly OutputInterface $output,
+        private readonly bool $compress = true
+    ) {
     }
 
     /**
@@ -56,8 +34,6 @@ class DatabaseDump
 
     /**
      * Dump database
-     * @param string $database
-     * @param string $filename
      * @return int
      */
     private function mysqldump(string $database, string $filename)
@@ -65,7 +41,8 @@ class DatabaseDump
         $return_var = NULL;
         $output = NULL;
         $errorFile = $filename . '.log';
-        $command = sprintf("/usr/bin/mysqldump --skip-lock-tables -u%s -h%s -P%d -p%s %s 2>%s >%s",
+        $command = sprintf(
+            "/usr/bin/mysqldump --skip-lock-tables -u%s -h%s -P%d -p%s %s 2>%s >%s",
             $this->configuration['username'],
             $this->configuration['hostname'],
             $this->configuration['port'],
@@ -90,9 +67,8 @@ class DatabaseDump
         $pdo = $this->getPdo();
 
         $result = $pdo->query('SHOW DATABASES')->fetchAll();
-        return array_values(array_filter(array_map(function ($item) {
-                return $item['Database'];
-            }, $result), function ($item) {
+        return array_values(
+            array_filter(array_map(fn ($item) => $item['Database'], $result), function ($item) {
                 if (in_array($item, [
                     'information_schema',
                     'performance_schema',
@@ -170,11 +146,9 @@ class DatabaseDump
         }
 
         $this->cleanup($database);
-
     }
 
     /**
-     * @param string $filename
      * @return int
      */
     private function gzip(string $filename)
@@ -182,7 +156,8 @@ class DatabaseDump
         $return_var = NULL;
         $output = NULL;
         $errorFile = $filename . '.log';
-        $command = sprintf("cat %s | gzip -c 2>%s >%s && rm -f %s",
+        $command = sprintf(
+            "cat %s | gzip -c 2>%s >%s && rm -f %s",
             $filename,
             $errorFile,
             $filename . '.gz',
@@ -209,9 +184,7 @@ class DatabaseDump
 
         $this->output->writeln("Keeping $history files");
 
-        $files = array_map(function ($item) {
-            return new \SplFileObject($item);
-        }, glob($this->destinationPath . '/' . $database . '/*.gz'));
+        $files = array_map(fn ($item) => new \SplFileObject($item), glob($this->destinationPath . '/' . $database . '/*.gz'));
         usort($files, function (\SplFileObject $a, \SplFileObject $b) {
             if ($a->getMTime() > $b->getMTime()) return -1;
             return 1;
@@ -230,15 +203,10 @@ class DatabaseDump
             $this->output->writeln("Removing $logfile");
             unlink($logfile);
         }
-
     }
 
-    /**
-     * @param int $keepHistory
-     */
     public function setKeepHistory(int $keepHistory)
     {
         $this->keepHistory = $keepHistory;
     }
-
 }

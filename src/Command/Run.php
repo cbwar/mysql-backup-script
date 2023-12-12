@@ -32,7 +32,7 @@ class Run extends Command
         $config = require __DIR__ . '/../../config/config.php';
 
         foreach ($config['servers'] as $key => $database) {
-            $destination = rtrim($config['destination']['path'], '/') . '/' . $key;
+            $destination = rtrim((string) $config['destination']['path'], '/') . '/' . $key;
 
             $dumper = new DatabaseDump($database, $destination, $output, $config['compress']);
             $output->writeln('');
