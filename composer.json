@@ -1,10 +1,9 @@
 {
   "name": "cbwar/mysql-backup-script",
   "require": {
-    "php": "^7",
-    "symfony/console": "^3.3",
-    "swiftmailer/swiftmailer": "^6.0",
-    "symfony/validator": "^3.3"
+    "php": "^8.1",
+    "symfony/console": "^6.4",
+    "symfony/validator": "^6.4"
   },
   "authors": [
     {
@@ -15,11 +14,6 @@
   "autoload": {
     "psr-4": {
       "Cbwar\\MysqlBackup\\": "src"
-    }
-  },
-  "config": {
-    "platform": {
-      "php": "7.0.0"
     }
   }
 }
