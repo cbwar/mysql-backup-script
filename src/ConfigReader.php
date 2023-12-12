@@ -2,9 +2,11 @@
 
 namespace Cbwar\MysqlBackup;
 
-use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\Validation;
+use Exception;
+use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validation;
 
 class ConfigReader
 {
@@ -17,13 +19,13 @@ class ConfigReader
     }
 
     /**
-     * @return ConstraintViolation[]
-     * @throws \Exception
+     * @return ConstraintViolationListInterface
+     * @throws Exception
      */
-    public function validate()
+    public function validate(): ConstraintViolationListInterface
     {
         if (!file_exists($this->filename)) {
-            throw new \Exception("Configuration file not found");
+            throw new RuntimeException("Configuration file not found");
         }
 
         $config = require $this->filename;
@@ -39,7 +41,7 @@ class ConfigReader
                     "port" => new Assert\Required(),
                     "username" => new Assert\Required(),
                     "password" => new Assert\Required(),
-                    "databases" => new Assert\Collection([]),
+                    "databases" => new Assert\Type('array'),
                     "keep"=>new Assert\Optional()
                 ]),
             ]),
