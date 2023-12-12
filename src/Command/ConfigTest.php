@@ -9,10 +9,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigTest extends Command
 {
+    protected static $defaultName = 'config-test';
     protected function configure()
     {
         $this
-            ->setName('config-test')
             ->setDescription('Test the configuration');
     }
 

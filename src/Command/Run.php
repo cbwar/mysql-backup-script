@@ -13,10 +13,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Run extends Command
 {
+    protected static $defaultName = 'run';
     protected function configure()
     {
         $this
-            ->setName('run')
             ->setDescription('Execute backup');
     }
 

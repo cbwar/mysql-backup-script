@@ -9,10 +9,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConfigDump extends Command
 {
+    protected static $defaultName = 'config-dump';
     protected function configure()
     {
         $this
-            ->setName('config-dump')
             ->setDescription('Dump the configuration');
     }
 
